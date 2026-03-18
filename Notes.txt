@@ -1,0 +1,3 @@
+1) Get the LCD working
+2) Write a configuration for the buttons and the MCU
+3) Look at BLE with RUST
