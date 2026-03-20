@@ -11,7 +11,11 @@ use esp_hal::{
     clock::CpuClock,
     gpio::{Io, Level, Output, OutputConfig},
     main,
-    time::{Duration, Instant},
+    time::{Duration, Instant,Rate},
+    spi::{
+        Mode, 
+        master::{Config,Spi},
+    },
 };
 use rtt_target::rprintln;
 
@@ -29,13 +33,27 @@ esp_bootloader_esp_idf::esp_app_desc!();
     reason = "it's not unusual to allocate larger buffers etc. in main"
 )]
 
+
 #[main]
 fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
     // Set GPIO0 as an output, and set its state high initially.
-    let mut led = Output::new(peripherals.GPIO15, Level::High, OutputConfig::default());
+    let mut led = Output::new(peripherals.GPIO20, Level::High, OutputConfig::default());
+
+    //Get the I2C driver
+    let mut lcd_spi = Spi::new(
+        peripherals.SPI2, //SPI2 is only usable
+        Config::default()
+            .with_frequency(Rate::from_khz(200)) //lcd max is 400 kHz
+            .with_mode(Mode::_3),
+    )
+    .unwrap()
+    .with_sck(peripherals.GPIO15)
+    .with_miso(peripherals.GPIO23)
+    .with_mosi(peripherals.GPIO22)
+    .with_cs(peripherals.GPIO21);
 
     loop {
         led.toggle();
